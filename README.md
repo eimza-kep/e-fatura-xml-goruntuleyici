@@ -43,12 +43,22 @@ Toplam KDV:   3,000.00 TRY
 ```bash
 python ubl_viewer.py GIB2026000000001.xml --html
 ```
-*XML dosyasının yanına `.html` dosyası üretilir ve varsayılan web tarayıcınızda açılır.*
+*XML dosyasının yanına `.html` dosyası üretilir ve varsayılan web tarayıcınızda açılır. Sayfa üzerinde doğrudan "Yazdır / PDF Olarak Kaydet" butonu yer alır.*
 
-### 3. JSON Formatında Çıktı Alma
+### 3. Özel Dosyaya Kaydetme ve Arka Plan Dönüşümü
+```bash
+# HTML olarak özel bir yola kaydetme (tarayıcı açmadan)
+python ubl_viewer.py fatura.xml --output ./faturalar/fatura.html --no-browser
+
+# JSON olarak dosyaya aktarma
+python ubl_viewer.py fatura.xml --output fatura_verisi.json
+```
+
+### 4. JSON Formatında Çıktı Alma
 ```bash
 python ubl_viewer.py GIB2026000000001.xml --json
 ```
+
 
 ---
 

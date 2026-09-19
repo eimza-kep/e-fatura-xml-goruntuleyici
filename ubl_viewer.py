@@ -19,6 +19,14 @@ import webbrowser
 import argparse
 import xml.etree.ElementTree as ET
 
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 def clean_tag(tag):
     """XML etiketindeki isim alanını (namespace) temizler."""
     if "}" in tag:
@@ -27,10 +35,13 @@ def clean_tag(tag):
 
 def parse_ubl_invoice(xml_path):
     """UBL-TR e-Fatura XML dosyasını ayrıştırır."""
-    tree = ET.parse(xml_path)
-    root = tree.getroot()
+    try:
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+    except ET.ParseError as e:
+        print(f"Hata: XML dosyası ayrıştırılamadı -> {e}", file=sys.stderr)
+        sys.exit(1)
 
-    # İsim alanlarını yok sayarak arama yapmak için yardımcı sözlük
     data = {
         "fatura_no": "",
         "fatura_tarihi": "",
@@ -147,16 +158,29 @@ def generate_html_invoice(data, output_path):
     <meta charset="UTF-8">
     <title>e-Fatura: {data['fatura_no']}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {{
+            .no-print {{ display: none !important; }}
+            body {{ background: #fff !important; padding: 0 !important; }}
+            .invoice-card {{ box-shadow: none !important; border: none !important; max-width: 100% !important; }}
+        }}
+    </style>
 </head>
 <body class="bg-slate-100 text-slate-800 p-4 sm:p-8">
-    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+    <div class="max-w-3xl mx-auto mb-4 flex justify-end gap-2 no-print">
+        <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-xl text-sm shadow-sm transition">
+            🖨️ Yazdır / PDF Olarak Kaydet
+        </button>
+    </div>
+
+    <div class="invoice-card max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
         <div class="flex justify-between items-start border-b border-slate-200 pb-6">
             <div>
                 <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                     e-Fatura ({data['fatura_tipi']})
                 </span>
-                <h1 class="text-2xl font-black text-slate-900 mt-2">{data['fatura_no']}</h1>
-                <p class="text-xs text-slate-500 mt-0.5">Düzenleme Tarihi: {data['fatura_tarihi']}</p>
+                <h1 class="text-2xl font-black text-slate-900 mt-2">{data['fatura_no'] or 'İSİMSİZ FATURA'}</h1>
+                <p class="text-xs text-slate-500 mt-0.5">Düzenleme Tarihi: {data['fatura_tarihi'] or 'Belirtilmemiş'}</p>
             </div>
             <div class="text-right">
                 <span class="text-xs text-slate-400 font-bold block">ÖDENECEK TUTAR</span>
@@ -222,7 +246,9 @@ def main():
     parser = argparse.ArgumentParser(description="GİB UBL-TR e-Fatura & e-Arşiv XML Görüntüleyici")
     parser.add_argument("xml_path", help="İncelenecek e-Fatura/e-Arşiv XML dosyasının yolu")
     parser.add_argument("--json", action="store_true", help="Sonucu JSON formatında verir")
-    parser.add_argument("--html", action="store_true", help="Faturayı HTML dosyasına dönüştürür ve tarayıcıda açar")
+    parser.add_argument("--html", action="store_true", help="Faturayı HTML dosyasına dönüştürür")
+    parser.add_argument("--output", help="HTML veya JSON çıktısının kaydedileceği özel dosya yolu")
+    parser.add_argument("--no-browser", action="store_true", help="HTML üretirken tarayıcıyı otomatik açmaz")
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -236,6 +262,19 @@ def main():
 
     data = parse_ubl_invoice(args.xml_path)
 
+    if args.output:
+        if args.output.lower().endswith(".json") or args.json:
+            with open(args.output, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print(f"[OK] Fatura verisi JSON olarak kaydedildi: {args.output}")
+            return
+        elif args.output.lower().endswith(".html") or args.html:
+            generate_html_invoice(data, args.output)
+            print(f"[OK] Fatura HTML olarak kaydedildi: {args.output}")
+            if not args.no_browser:
+                webbrowser.open(args.output)
+            return
+
     if args.json:
         print(json.dumps(data, ensure_ascii=False, indent=2))
         return
@@ -244,22 +283,31 @@ def main():
         out_html = os.path.splitext(args.xml_path)[0] + ".html"
         generate_html_invoice(data, out_html)
         print(f"[OK] Fatura HTML olarak üretildi: {out_html}")
-        webbrowser.open(out_html)
+        if not args.no_browser:
+            webbrowser.open(out_html)
         return
 
     # Terminal çıktısı
     print("=" * 80)
-    print(f"            GİB e-FATURA ÖZETİ: {data['fatura_no']} ({data['fatura_tipi']})")
+    print(f"            GİB e-FATURA ÖZETİ: {data['fatura_no'] or 'İSİMSİZ'} ({data['fatura_tipi']})")
     print("=" * 80)
     print(f"Tarih:        {data['fatura_tarihi']}")
     print(f"Satıcı:       {data['satici']['unvan']} (VKN/TCKN: {data['satici']['vkn_tckn']})")
     print(f"Alıcı:        {data['alici']['unvan']} (VKN/TCKN: {data['alici']['vkn_tckn']})")
     print("-" * 80)
+
+    if data["kalemler"]:
+        print(f"Fatura Kalemleri ({len(data['kalemler'])} Adet):")
+        for idx, k in enumerate(data["kalemler"]):
+            print(f"  [{idx+1}] {k['urun']:<35} | Miktar: {k['miktar']:<4} | Toplam: {k['toplam']:,.2f} {data['para_birimi']}")
+        print("-" * 80)
+
     print(f"Mal/Hizmet:   {data['tutarlar']['mal_hizmet_toplam']:,.2f} {data['para_birimi']}")
     print(f"Toplam KDV:   {data['tutarlar']['kdv_toplam']:,.2f} {data['para_birimi']}")
     print(f"ÖDENECEK:     {data['tutarlar']['odenecek_tutar']:,.2f} {data['para_birimi']}")
     print("=" * 80)
-    print("Tarayıcıda açmak için: python ubl_viewer.py fatura.xml --html")
+    print("Tarayıcıda görselleştirmek için: python ubl_viewer.py fatura.xml --html")
 
 if __name__ == "__main__":
     main()
+
