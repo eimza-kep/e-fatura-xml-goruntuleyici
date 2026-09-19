@@ -7,7 +7,7 @@ Bu betik, Gelir İdaresi Başkanlığı UBL-TR 1.2 standardındaki e-Fatura ve e
 XML dosyalarını ayrıştırarak; fatura kalemlerini, satıcı/alıcı bilgilerini,
 KDV ve ödenecek tutarları terminalde gösterir veya modern bir HTML faturası üretir.
 
-Yazar: E-İmza & Dijital Dönüşüm Portalı (https://eimza-kep.github.io/eimza-blog/)
+Yazar: E-İmza & Dijital Dönüşüm Portalı (https://efatura-atolyesi.pages.dev/yazilar/e-fatura-ve-e-arsiv-arasindaki-farklar.html)
 Lisans: MIT
 """
 

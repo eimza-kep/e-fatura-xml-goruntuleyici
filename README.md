@@ -55,3 +55,10 @@ python ubl_viewer.py GIB2026000000001.xml --json
 ## ⚖️ Lisans
 
 Bu proje [MIT Lisansı](LICENSE) kapsamında sunulmaktadır.
+
+
+### 📚 İlgili Rehber ve Çözümler
+* 📄 [GİB e-Arşiv Portaldan Fatura Kestikten Sonra İptal Süresi Kaç Gündür?](https://efatura-atolyesi.pages.dev/yazilar/gib-e-arsiv-fatura-iptal-suresi-kac-gun.html)
+* 📄 [e-Fatura ile e-Arşiv Fatura Arasındaki Fark Nedir? Kime Hangisi Kesilir?](https://efatura-atolyesi.pages.dev/yazilar/e-fatura-ve-e-arsiv-arasindaki-farklar.html)
+* 📄 [e-İrsaliyede Karekod (QR Kod) Olmaması Halinde Uygulanan Cezalar](https://efatura-atolyesi.pages.dev/yazilar/e-irsaliyede-karekod-zorunlulugu-ve-cezalar.html)
+* 📄 [Yeni Kurulan Bir Şahıs Şirketi Hemen e-Faturaya Geçmek Zorunda mı?](https://edonusum-kobi.pages.dev/yazilar/yeni-kurulan-sahis-sirketi-e-fatura-zorunlu-mu.html)
