@@ -1,10 +1,11 @@
 # GİB UBL-TR e-Fatura & e-Arşiv XML Görüntüleyici 🧾🌐
 
-[![Lisans: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python CI](https://github.com/eimza-kep/e-fatura-xml-goruntuleyici/actions/workflows/ci.yml/badge.svg)](https://github.com/eimza-kep/e-fatura-xml-goruntuleyici/actions)
+[![Lisans: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python: 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![Standart: GİB UBL-TR](https://img.shields.io/badge/Standart-G%C4%B0B%20UBL--TR%201.2-red.svg)](https://ebelge.gib.gov.tr)
 
-Gelir İdaresi Başkanlığı (**GİB**) e-Belge portalından, özel entegratörlerden veya e-ticaret sitelerinden indirilen karmaşık `.xml` uzantılı **e-Fatura** ve **e-Arşiv Fatura** dosyalarını **kodlama bilmeden anında okunabilir hale getiren ve modern bir HTML faturasına dönüştüren** açık kaynaklı hafif araçtır.
+Gelir İdaresi Başkanlığı (**GİB**) e-Belge portalından, özel entegratörlerden veya e-ticaret sitelerinden indirilen karmaşık `.xml` uzantılı **e-Fatura** ve **e-Arşiv Fatura** dosyalarını **kodlama bilmeden anında okunabilir hale getiren, modern HTML faturasına dönüştüren veya Excel/CSV/JSON olarak dışa aktaran** açık kaynaklı hafif araçtır.
 
 ---
 
@@ -13,6 +14,7 @@ Gelir İdaresi Başkanlığı (**GİB**) e-Belge portalından, özel entegratör
 * 📄 **UBL-TR 1.2 Desteği:** Standart GİB e-Fatura ve e-Arşiv XML yapısını doğrudan ayrıştırır.
 * 🖥️ **Terminal Özeti:** Fatura No, Tarih, Satıcı/Alıcı VKN/TCKN, KDV ve Ödenecek Tutarı anında ekrana basar.
 * 🌐 **Modern HTML Görseli (`--html`):** XML faturasını şık, profesyonel ve yazdırılabilir bir HTML e-Faturasına dönüştürür ve tarayıcınızda açar.
+* 📊 **CSV / Excel Aktarımı (`--csv`):** Fatura kalemlerini doğrudan Excel uyumlu noktalı virgüllü CSV tablosuna döker.
 * 🤖 **JSON Çıkışı (`--json`):** Muhasebe programları, ERP sistemleri veya veritabanı aktarımları için JSON formatında veri üretir.
 
 ---

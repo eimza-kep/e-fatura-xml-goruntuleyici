@@ -242,12 +242,35 @@ def generate_html_invoice(data, output_path):
         f.write(html)
     return output_path
 
+def export_csv_items(data, output_path):
+    """Fatura kalemlerini CSV formatında dışa aktarır."""
+    import csv
+    with open(output_path, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.writer(f, delimiter=";")
+        writer.writerow(["Sıra", "Fatura No", "Fatura Tarihi", "Ürün/Hizmet Açıklaması", "Miktar", "Birim", "Birim Fiyat", "KDV Oranı (%)", "KDV Tutarı", "Toplam Tutar", "Para Birimi"])
+        for idx, item in enumerate(data.get("kalemler", []), 1):
+            writer.writerow([
+                idx,
+                data.get("fatura_no", ""),
+                data.get("fatura_tarihi", ""),
+                item.get("urun", ""),
+                item.get("miktar", 1),
+                item.get("birim", "ADET"),
+                item.get("birim_fiyat", 0.0),
+                item.get("kdv_orani", 0),
+                item.get("kdv_tutari", 0.0),
+                item.get("toplam", 0.0),
+                data.get("para_birimi", "TRY")
+            ])
+    return output_path
+
 def main():
     parser = argparse.ArgumentParser(description="GİB UBL-TR e-Fatura & e-Arşiv XML Görüntüleyici")
     parser.add_argument("xml_path", help="İncelenecek e-Fatura/e-Arşiv XML dosyasının yolu")
     parser.add_argument("--json", action="store_true", help="Sonucu JSON formatında verir")
+    parser.add_argument("--csv", action="store_true", help="Fatura kalemlerini CSV formatında dışa aktarır")
     parser.add_argument("--html", action="store_true", help="Faturayı HTML dosyasına dönüştürür")
-    parser.add_argument("--output", help="HTML veya JSON çıktısının kaydedileceği özel dosya yolu")
+    parser.add_argument("--output", help="HTML, JSON veya CSV çıktısının kaydedileceği özel dosya yolu")
     parser.add_argument("--no-browser", action="store_true", help="HTML üretirken tarayıcıyı otomatik açmaz")
 
     if len(sys.argv) == 1:
@@ -268,12 +291,22 @@ def main():
                 json.dump(data, f, ensure_ascii=False, indent=2)
             print(f"[OK] Fatura verisi JSON olarak kaydedildi: {args.output}")
             return
+        elif args.output.lower().endswith(".csv") or args.csv:
+            export_csv_items(data, args.output)
+            print(f"[OK] Fatura kalemleri CSV olarak kaydedildi: {args.output}")
+            return
         elif args.output.lower().endswith(".html") or args.html:
             generate_html_invoice(data, args.output)
             print(f"[OK] Fatura HTML olarak kaydedildi: {args.output}")
             if not args.no_browser:
                 webbrowser.open(args.output)
             return
+
+    if args.csv:
+        out_csv = os.path.splitext(args.xml_path)[0] + "_kalemler.csv"
+        export_csv_items(data, out_csv)
+        print(f"[OK] Fatura kalemleri CSV olarak üretildi: {out_csv}")
+        return
 
     if args.json:
         print(json.dumps(data, ensure_ascii=False, indent=2))
