@@ -16,7 +16,7 @@ yazdırılabilir modern bir HTML faturası/irsaliyesi üretir.
 - Yazdırılabilir (print-ready) ve responsive HTML görünümü
 - Toplu dizin tarama (--dir) ve HTML fatura arşivi üretimi
 
-Yazar: E-İmza & Dijital Dönüşüm Portalı (https://efatura-atolyesi.pages.dev/)
+Yazar: E-İmza & Dijital Dönüşüm Portalı (https://efaturabilgi.site/)
 Lisans: MIT
 """
 

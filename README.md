@@ -4,7 +4,7 @@
 [![Lisans: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python: 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![Standart: UBL-TR 1.2](https://img.shields.io/badge/Standart-UBL--TR%201.2-red.svg)](https://ebelge.gib.gov.tr)
-[![Blog](https://img.shields.io/badge/Rehber-e--Fatura%20At%C3%B6lyesi-emerald.svg)](https://efatura-atolyesi.pages.dev/)
+[![Blog](https://img.shields.io/badge/Rehber-e--Fatura%20At%C3%B6lyesi-emerald.svg)](https://efaturabilgi.site/)
 
 Gelir İdaresi Başkanlığı (GİB) **UBL-TR 1.2 standardındaki e-Fatura, e-Arşiv ve e-İrsaliye (DespatchAdvice)** XML dosyalarını ayrıştırıp; fatura kalemlerini, satıcı/alıcı/taşıyıcı bilgilerini ve KDV dağılımını terminalde özetleyen, muhasebe CSV'sine aktaran ve tarayıcıda yazdırılabilir modern bir HTML faturası oluşturan açık kaynaklı Python aracıdır.
 
@@ -74,9 +74,9 @@ Bu araç [eimza-kep](https://github.com/eimza-kep) organizasyonunun açık kayna
 ---
 
 ## 📚 İlgili Teknik Rehberler
-* 📄 [e-Fatura ve e-Arşiv Fatura Arasındaki Temel Hukuki ve Teknik Farklar](https://efatura-atolyesi.pages.dev/yazilar/e-fatura-ve-e-arsiv-arasindaki-farklar.html)
-* 📄 [e-İrsaliye Zorunluluğu ve Sevk Sürecinde Karekod Uygulaması](https://edonusum-kobi.pages.dev/yazilar/e-irsaliye-gecis-ve-zorunluluk-rehberi.html)
-* 📄 [Temel Fatura ile Ticari Fatura Arasındaki Farklar ve 8 Günlük Ret Süresi](https://efatura-atolyesi.pages.dev/yazilar/temel-fatura-ticari-fatura-farklari-ve-itiraz.html)
+* 📄 [e-Fatura ve e-Arşiv Fatura Arasındaki Temel Hukuki ve Teknik Farklar](https://efaturabilgi.site/yazilar/e-fatura-ve-e-arsiv-arasindaki-farklar.html)
+* 📄 [e-İrsaliye Zorunluluğu ve Sevk Sürecinde Karekod Uygulaması](https://edonusumkobi.site/yazilar/e-irsaliye-gecis-ve-zorunluluk-rehberi.html)
+* 📄 [Temel Fatura ile Ticari Fatura Arasındaki Farklar ve 8 Günlük Ret Süresi](https://efaturabilgi.site/yazilar/temel-fatura-ticari-fatura-farklari-ve-itiraz.html)
 
 ---
 
