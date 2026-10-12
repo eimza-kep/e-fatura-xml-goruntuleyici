@@ -66,7 +66,9 @@ def parse_ubl_document(xml_path):
         "tasiyici": { "unvan": "", "vkn_tckn": "", "plaka": "" },
         "tutarlar": { "mal_hizmet_toplam": 0.0, "kdv_toplam": 0.0, "odenecek_tutar": 0.0 },
         "kdv_detaylari": [],
-        "kalemler": []
+        "kalemler": [],
+        "notlar": [],
+        "istisna_kodlari": []
     }
 
     # Ana meta veriler
@@ -84,6 +86,12 @@ def parse_ubl_document(xml_path):
             data["fatura_tipi"] = val
         elif tag == "DocumentCurrencyCode" and not data["para_birimi"]:
             data["para_birimi"] = val
+        elif tag == "Note" and val:
+            if val not in data["notlar"]:
+                data["notlar"].append(val)
+        elif tag in ["TaxExemptionReasonCode", "TaxExemptionReason"] and val:
+            if val not in data["istisna_kodlari"]:
+                data["istisna_kodlari"].append(val)
 
     # Satıcı / Gönderen (AccountingSupplierParty / DespatchSupplierParty)
     supplier_tags = {"AccountingSupplierParty", "DespatchSupplierParty"}
