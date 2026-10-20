@@ -54,16 +54,18 @@ def parse_ubl_document(xml_path):
 
     root_tag = clean_tag(root.tag)
     is_despatch = "DespatchAdvice" in root_tag
+    is_gider = "erreceipt" in root_tag.lower() or "giderpusulasi" in root_tag.lower()
+    belge_turu = "e-İrsaliye" if is_despatch else ("e-Gider Pusulası" if is_gider else "e-Fatura")
 
     data = {
-        "belge_turu": "e-İrsaliye" if is_despatch else "e-Fatura",
+        "belge_turu": belge_turu,
         "fatura_no": "",
         "fatura_tarihi": "",
-        "fatura_tipi": "SEVK" if is_despatch else "SATIS",
+        "fatura_tipi": "SEVK" if is_despatch else ("GIDER_PUSULASI" if is_gider else "SATIS"),
         "para_birimi": "TRY",
         "satici": { "unvan": "", "vkn_tckn": "", "vergi_dairesi": "", "sehir": "" },
         "alici":  { "unvan": "", "vkn_tckn": "", "vergi_dairesi": "", "sehir": "" },
-        "tasiyici": { "unvan": "", "vkn_tckn": "", "plaka": "" },
+        "tasiyici": { "unvan": "", "vkn_tckn": "", "plaka": "", "dorse_plaka": "", "plaka_tipi": "STANDART" },
         "tutarlar": { "mal_hizmet_toplam": 0.0, "kdv_toplam": 0.0, "odenecek_tutar": 0.0 },
         "kdv_detaylari": [],
         "kalemler": [],
@@ -89,7 +91,7 @@ def parse_ubl_document(xml_path):
         elif tag == "Note" and val:
             if val not in data["notlar"]:
                 data["notlar"].append(val)
-        elif tag in ["TaxExemptionReasonCode", "TaxExemptionReason"] and val:
+        elif tag in ["TaxExemptionReasonCode", "TaxExemptionReason", "YatirimTesvikTaxExemptionReasonCode"] and val:
             if val not in data["istisna_kodlari"]:
                 data["istisna_kodlari"].append(val)
 
@@ -123,14 +125,22 @@ def parse_ubl_document(xml_path):
 
     # Taşıyıcı ve Plaka (e-İrsaliye için)
     for party in root.iter():
-        if clean_tag(party.tag) in ["CarrierParty", "Shipment"]:
+        if clean_tag(party.tag) in ["CarrierParty", "Shipment", "RoadTransport"]:
             for child in party.iter():
                 ctag = clean_tag(child.tag)
                 cval = (child.text or "").strip()
                 if ctag in ["RegistrationName", "Name"] and not data["tasiyici"]["unvan"]:
                     data["tasiyici"]["unvan"] = cval
-                elif ctag == "LicensePlateID" and not data["tasiyici"]["plaka"]:
-                    data["tasiyici"]["plaka"] = cval
+                elif ctag == "LicensePlateID":
+                    scheme = child.attrib.get("schemeID", "").upper()
+                    if "DORSE" in scheme or "DORSE" in cval.upper():
+                        data["tasiyici"]["dorse_plaka"] = cval
+                        if scheme:
+                            data["tasiyici"]["plaka_tipi"] = scheme
+                    else:
+                        data["tasiyici"]["plaka"] = cval
+                        if scheme:
+                            data["tasiyici"]["plaka_tipi"] = scheme
 
     # Tutarlar
     for elem in root.iter():

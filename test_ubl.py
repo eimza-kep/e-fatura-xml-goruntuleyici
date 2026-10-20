@@ -83,5 +83,33 @@ class TestUBLViewer(unittest.TestCase):
             if os.path.exists(out_csv):
                 os.remove(out_csv)
 
+    def test_foreign_plate_and_investment_incentive(self):
+        temp_xml = os.path.join(os.path.dirname(__file__), "temp_foreign.xml")
+        try:
+            with open(temp_xml, "w", encoding="utf-8") as f:
+                f.write("""<?xml version="1.0" encoding="UTF-8"?>
+<DespatchAdvice xmlns="urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2">
+    <ID>IRS2026000000999</ID>
+    <IssueDate>2026-10-20</IssueDate>
+    <YatirimTesvikTaxExemptionReasonCode>324</YatirimTesvikTaxExemptionReasonCode>
+    <CarrierParty>
+        <PartyName><Name>Global Nakliyat</Name></PartyName>
+        <LicensePlateID schemeID="YABANCIPLAKA">B 1234 XY</LicensePlateID>
+        <LicensePlateID schemeID="YABANCIDORSE">BG 9988 AA</LicensePlateID>
+    </CarrierParty>
+    <DespatchLine>
+        <ItemDescription>Teşvik Kapsamı CNC Tezgah</ItemDescription>
+        <DeliveredQuantity>1</DeliveredQuantity>
+    </DespatchLine>
+</DespatchAdvice>""")
+            data = parse_ubl_document(temp_xml)
+            self.assertEqual(data["tasiyici"]["plaka"], "B 1234 XY")
+            self.assertEqual(data["tasiyici"]["dorse_plaka"], "BG 9988 AA")
+            self.assertIn(data["tasiyici"]["plaka_tipi"], ["YABANCIPLAKA", "YABANCIDORSE"])
+            self.assertIn("324", data["istisna_kodlari"])
+        finally:
+            if os.path.exists(temp_xml):
+                os.remove(temp_xml)
+
 if __name__ == "__main__":
     unittest.main()
