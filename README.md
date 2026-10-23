@@ -1,63 +1,135 @@
-# GİB UBL-TR e-Fatura, e-Arşiv & e-İrsaliye XML Görüntüleyici 🧾✨
+# GİB UBL-TR e-Fatura, e-Arşiv, e-İrsaliye, e-SMM & e-MM XML Görüntüleyici 🧾✨
 
 [![Python CI](https://github.com/eimza-kep/e-fatura-xml-goruntuleyici/actions/workflows/ci.yml/badge.svg)](https://github.com/eimza-kep/e-fatura-xml-goruntuleyici/actions)
 [![Lisans: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python: 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![Standart: UBL-TR 1.2](https://img.shields.io/badge/Standart-UBL--TR%201.2-red.svg)](https://ebelge.gib.gov.tr)
+[![Bağımlılık: Yok](https://img.shields.io/badge/Dependencies-Zero--Dependency-success.svg)](https://github.com)
 [![Blog](https://img.shields.io/badge/Rehber-e--Fatura%20At%C3%B6lyesi-emerald.svg)](https://efaturabilgi.site/)
 
-Gelir İdaresi Başkanlığı (GİB) **UBL-TR 1.2 standardındaki e-Fatura, e-Arşiv ve e-İrsaliye (DespatchAdvice)** XML dosyalarını ayrıştırıp; fatura kalemlerini, satıcı/alıcı/taşıyıcı bilgilerini ve KDV dağılımını terminalde özetleyen, muhasebe CSV'sine aktaran ve tarayıcıda yazdırılabilir modern bir HTML faturası oluşturan açık kaynaklı Python aracıdır.
+Gelir İdaresi Başkanlığı (GİB) **UBL-TR 1.2 standardındaki e-Fatura, e-Arşiv, e-İrsaliye (DespatchAdvice), e-Serbest Meslek Makbuzu (e-SMM) ve e-Müstahsil Makbuzu (e-MM)** XML dosyalarını ayrıştırıp; XAdES-BES Mali Mühür doğrulamasını, EPDK Elektrikli Araç Şarj & Enerji Tüketim detaylarını, fatura kalemlerini, satıcı/alıcı/taşıyıcı bilgilerini ve KDV/stopaj dağılımını terminalde özetleyen, muhasebe CSV'sine aktaran ve tarayıcıda yazdırılabilir modern bir HTML faturası oluşturan açık kaynaklı Python aracıdır.
 
 ---
 
-## ✨ Öne Çıkan Özellikler
+## ✨ Öne Çıkan Özellikler (v1.3)
 
-* ⚡ **Sıfır Bağımlılık (Zero-Dependency):** Ek kütüphane veya Java kurulumu gerekmez. Saf Python ile çalışır.
-* 📦 **Çoklu Belge Desteği:** e-Fatura, e-Arşiv Fatura ve **e-İrsaliye (DespatchAdvice)** belgelerini otomatik tanır.
-* 🚚 **Lojistik ve Taşıyıcı Bilgileri:** e-İrsaliyelerdeki plaka, taşıyıcı firma ve sevk kalemlerini ayrıştırır.
-* 🖨️ **Baskıya Hazır HTML:** Tailwind CSS destekli, yazdırma moduna özel (`@media print`) şık tasarım.
-* 📊 **CSV Dışa Aktarım:** Fatura kalemlerini Excel ve muhasebe programlarına aktarılabilir CSV formatına döker.
-* 📁 **Toplu Dizin Tarama:** `--dir` ile bir klasördeki yüzlerce e-belgeyi tek komutla tarayıp listeleyebilir.
+* ⚡ **Sıfır Harici Bağımlılık (Zero-Dependency):** Java, Node.js veya harici Python modülü gerektirmeyen %100 saf Python standart kütüphanesi mimarisi.
+* 🛡️ **XAdES-BES Sayısal İmza & Mali Mühür Doğrulama:** XML içindeki `<ds:Signature>` bloğunu tarayarak imzacının VKN'sini, sertifika sağlayıcısını (TÜBİTAK Kamu SM / ESHS), seri numarasını ve DigestValue bütünlüğünü doğrular.
+* ⚖️ **e-SMM ve e-Müstahsil Makbuzu Desteği:**
+  - **e-SMM:** Serbest meslek erbabı (avukat, mali müşavir, doktor) için %20 Gelir Vergisi stopajı ve net ele geçen tutar hesaplama.
+  - **e-MM:** Çiftçiden yapılan alımlarda GV stopajı, Ticaret Borsası tescil ücreti ve SGK Bağ-Kur prim kesintilerini ayrıştırma.
+* ⚡ **EPDK Elektrikli Araç Şarj & Enerji Tüketim Modülü:** Şarj ağı operatörlerinin düzenlediği faturalarda İstasyon ID, Soket ID, kWh tüketim miktarı, birim fiyat ve şarj başlangıç/bitiş zamanlarını ayrıştırıp özel kart olarak sunar.
+* 🚚 **Lojistik ve e-İrsaliye Desteği:** Yabancı plaka/dorse tipleri (`YABANCIPLAKA`, `YABANCIDORSE`), taşıyıcı firma unvanı ve sevk kalemleri ayrıştırması.
+* 🖨️ **Baskıya Hazır HTML:** Tailwind CSS destekli, yazdırma moduna özel (`@media print`) profesyonel fatura çıktısı.
+* 📊 **Muhasebe CSV Dışa Aktarımı:** Kalemleri ERP ve muhasebe yazılımlarına aktarılabilir formatta dışa aktarma.
+* 📁 **Toplu Dizin Tarama:** `--dir` parametresi ile klasördeki yüzlerce e-belgeyi tek komutla tarama ve özetleme.
 
 ---
 
-## 🚀 Hızlı Başlangıç
+## 🛠️ Kurulum ve Yerel Geliştirme (Local Setup)
 
-### 1. Terminalde Belge Özeti Görüntüleme
+### 1. Gereksinimler
+- **Python 3.8+** (Python 3.10, 3.11 veya 3.12 önerilir)
+- **Git**
+
+### 2. Depoyu Klonlayın
+```bash
+git clone https://github.com/eimza-kep/e-fatura-xml-goruntuleyici.git
+cd e-fatura-xml-goruntuleyici
+```
+
+### 3. Sanal Ortam Kurulumu (İsteğe Bağlı)
+Araç sıfır bağımlılığa sahip olduğu için doğrudan çalıştırılabilir; izole ortam için:
+```bash
+python -m venv venv
+
+# Windows üzerinde aktive etme:
+venv\Scripts\activate
+
+# Linux / macOS üzerinde aktive etme:
+source venv/bin/activate
+```
+
+### 4. Birim Testleri Çalıştırın
+Tüm testleri doğrulamak için:
+```bash
+python -m unittest test_ubl.py
+```
+*(8 test senaryosu ~0.005 saniyede tamamlanmalıdır)*
+
+---
+
+## 🚀 Komut Satırı Kullanım Kılavuzu (CLI)
+
+### 1. Terminalde Belge Özeti ve Mali Mühür İncelemesi
 ```bash
 python ubl_viewer.py fatura.xml
 ```
 
-### 2. Tarayıcıda Açılabilir HTML Faturası Üretme
+**Örnek v1.3 Çıktısı:**
+```text
+=====================================================================================
+       GİB E-FATURA ÖZETİ: GIB2026000000042 (SATIS)
+=====================================================================================
+Tarih:        2026-09-24
+Satıcı:       Örnek Bilişim ve E-Dönüşüm Hizmetleri A.Ş. (VKN/TCKN: 1234567890)
+Alıcı:        Anadolu Teknoloji ve Lojistik Ltd. Şti. (VKN/TCKN: 9876543210)
+Mali Mühür:   🛡️ XAdES-BES Doğrulandı (Kamu SM | VKN: 1234567890)
+-------------------------------------------------------------------------------------
+Kalemler (1 Adet):
+  [1] Bulut E-İmza & KEP Entegrasyon Paketi | Miktar: 2    C62  | Toplam: 20,000.00 TRY
+-------------------------------------------------------------------------------------
+Mal/Hizmet:   20,000.00 TRY
+  └─ KDV (%20): 4,000.00 TRY
+Toplam KDV:   4,000.00 TRY
+ÖDENECEK:     24,000.00 TRY
+=====================================================================================
+```
+
+### 2. Elektrikli Araç Şarj ve e-SMM Belgelerini İnceleme
+```bash
+# Şarj istasyonu faturası
+python ubl_viewer.py sarj_faturasi.xml
+
+# Serbest Meslek Makbuzu (e-SMM)
+python ubl_viewer.py smm_belgesi.xml
+```
+
+### 3. Tarayıcıda Açılabilir HTML Faturası Üretme
 ```bash
 python ubl_viewer.py fatura.xml --html
 ```
+*(Tarayıcınızda modern HTML fatura görünümü otomatik olarak açılır)*
 
-### 3. Fatura Kalemlerini CSV'ye Aktarma
+### 4. Fatura Kalemlerini CSV Olarak Kaydetme
 ```bash
 python ubl_viewer.py fatura.xml --csv
 ```
 
-### 4. Klasördeki Belgeleri Toplu İnceleme
+### 5. Klasördeki Belgeleri Toplu İnceleme (Batch Scan)
 ```bash
 python ubl_viewer.py --dir ./gelen_faturalar/ --csv toplu_ozet.csv
 ```
 
 ---
 
-## 🐍 Python Projelerinde Kullanım
+## 🐍 Python Projelerinde Kütüphane Olarak Kullanım
 
 ```python
 from ubl_viewer import parse_ubl_document, generate_html_invoice
 
 # XML belgesini ayrıştır
-fatura = parse_ubl_document("fatura.xml")
+belge = parse_ubl_document("fatura.xml")
 
-print(f"Tür: {fatura['belge_turu']} | Fatura No: {fatura['fatura_no']}")
-print(f"Ödenecek Tutar: {fatura['tutarlar']['odenecek_tutar']:,.2f} {fatura['para_birimi']}")
+print(f"Belge Türü: {belge['belge_turu']}")
+print(f"Belge No:   {belge['fatura_no']}")
+print(f"Mali Mühür: {belge['imza_bilgileri']['eshs_saglayici']}")
 
-# HTML üret
-generate_html_invoice(fatura, "goruntu.html")
+if belge["enerji_sarj_bilgileri"]["enerji_faturasi_mi"]:
+    print(f"EV Şarj Tüketimi: {belge['enerji_sarj_bilgileri']['tuketim_kwh']} kWh")
+
+# HTML çıktısı üret
+generate_html_invoice(belge, "cikti.html")
 ```
 
 ---
@@ -70,6 +142,7 @@ Bu araç [eimza-kep](https://github.com/eimza-kep) organizasyonunun açık kayna
 * 📊 **[gib-edefter-berat-xml-dogrulayici](https://github.com/eimza-kep/gib-edefter-berat-xml-dogrulayici):** e-Defter ve Berat XML dosyalarını şema ve bakiye doğrulama aracı.
 * 📑 **[e-fatura-itiraz-ve-iade-scripti](https://github.com/eimza-kep/e-fatura-itiraz-ve-iade-scripti):** 8 günlük yasal itiraz süresi takip ve fatura iade tutanağı scripti.
 * 📬 **[kep-adresi-dogrulayici](https://github.com/eimza-kep/kep-adresi-dogrulayici):** KEP adresi ve BTK operatör denetleyici.
+* 📜 **[python-pdf-eimza-dogrulayici](https://github.com/eimza-kep/python-pdf-eimza-dogrulayici):** PAdES/CAdES PDF dijital imza ve LTV doğrulama aracı.
 
 ---
 
@@ -82,4 +155,4 @@ Bu araç [eimza-kep](https://github.com/eimza-kep) organizasyonunun açık kayna
 
 ## ⚖️ Lisans
 
-Bu proje [MIT Lisansı](LICENSE) ile lisanslanmıştır.
+Bu proje [MIT Lisansı](LICENSE) ile lisanslanmıştır. Ticari ve kişisel projelerde serbestçe kullanılabilir.

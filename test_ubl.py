@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Unit tests for GİB UBL-TR Invoice & Despatch Viewer v1.2"""
+"""Unit tests for GİB UBL-TR Invoice, Despatch, e-SMM & e-MM Viewer v1.3"""
 import os
 import unittest
 from ubl_viewer import parse_ubl_document, generate_html_invoice, export_csv_items
@@ -20,7 +20,6 @@ class TestUBLViewer(unittest.TestCase):
         self.assertEqual(data["kalemler"][0]["miktar"], 2.0)
 
     def test_simulated_despatch(self):
-        # Create a temporary e-İrsaliye (DespatchAdvice) XML
         temp_despatch = os.path.join(os.path.dirname(__file__), "temp_despatch.xml")
         try:
             with open(temp_despatch, "w", encoding="utf-8") as f:
@@ -31,7 +30,7 @@ class TestUBLViewer(unittest.TestCase):
     <DespatchSupplierParty>
         <Party>
             <PartyName><Name>Lojistik A.Ş.</Name></PartyName>
-            <PartyIdentification><ID>5555555555</ID></PartyIdentification>
+            <PartyIdentification><ID schemeID="VKN">5555555555</ID></PartyIdentification>
         </Party>
     </DespatchSupplierParty>
     <CarrierParty>
@@ -110,6 +109,138 @@ class TestUBLViewer(unittest.TestCase):
         finally:
             if os.path.exists(temp_xml):
                 os.remove(temp_xml)
+
+    def test_xades_bes_signature_parsing(self):
+        temp_sig_xml = os.path.join(os.path.dirname(__file__), "temp_xades.xml")
+        try:
+            with open(temp_sig_xml, "w", encoding="utf-8") as f:
+                f.write("""<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+         xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+         xmlns:xades="http://uri.etsi.org/01903/v1.3.2#">
+    <ID>GIB2026000000888</ID>
+    <IssueDate>2026-10-23</IssueDate>
+    <InvoiceTypeCode>SATIS</InvoiceTypeCode>
+    <ds:Signature Id="Signature_1">
+        <ds:SignedInfo>
+            <ds:Reference URI="">
+                <ds:DigestValue>mK2+bO7xM8k=</ds:DigestValue>
+            </ds:Reference>
+        </ds:SignedInfo>
+        <ds:KeyInfo>
+            <ds:X509Data>
+                <ds:X509SubjectName>serialNumber=1234567890, CN=Test Mali Mühür Ltd.</ds:X509SubjectName>
+                <ds:X509IssuerName>CN=TÜBİTAK BİLGEM Kamu SM, O=TÜBİTAK</ds:X509IssuerName>
+                <ds:X509SerialNumber>9988776655</ds:X509SerialNumber>
+            </ds:X509Data>
+        </ds:KeyInfo>
+        <ds:Object>
+            <xades:QualifyingProperties>
+                <xades:SignedProperties>
+                    <xades:SignedSignatureProperties>
+                        <xades:SigningTime>2026-10-23T10:15:00Z</xades:SigningTime>
+                    </xades:SignedSignatureProperties>
+                </xades:SignedProperties>
+            </xades:QualifyingProperties>
+        </ds:Object>
+    </ds:Signature>
+</Invoice>""")
+            data = parse_ubl_document(temp_sig_xml)
+            sig = data["imza_bilgileri"]
+            self.assertTrue(sig["imzali_mi"])
+            self.assertEqual(sig["eshs_saglayici"], "Kamu SM")
+            self.assertEqual(sig["imzaci_vkn"], "1234567890")
+            self.assertEqual(sig["digest_value"], "mK2+bO7xM8k=")
+            self.assertEqual(sig["sertifika_seri_no"], "9988776655")
+            self.assertIn("2026-10-23", sig["imza_zamani"])
+        finally:
+            if os.path.exists(temp_sig_xml):
+                os.remove(temp_sig_xml)
+
+    def test_e_smm_and_mustahsil_support(self):
+        # e-SMM Test
+        temp_smm = os.path.join(os.path.dirname(__file__), "temp_smm.xml")
+        try:
+            with open(temp_smm, "w", encoding="utf-8") as f:
+                f.write("""<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
+    <ID>SMM2026000000015</ID>
+    <IssueDate>2026-10-22</IssueDate>
+    <InvoiceTypeCode>SERBESTMESLEKMAKBUZU</InvoiceTypeCode>
+    <LegalMonetaryTotal>
+        <LineExtensionAmount>10000.00</LineExtensionAmount>
+        <PayableAmount>10000.00</PayableAmount>
+    </LegalMonetaryTotal>
+    <TaxTotal>
+        <TaxAmount>2000.00</TaxAmount>
+        <TaxSubtotal>
+            <TaxAmount>2000.00</TaxAmount>
+            <Percent>20.0</Percent>
+        </TaxSubtotal>
+    </TaxTotal>
+    <InvoiceLine>
+        <ItemDescription>Hukuki Danışmanlık Hizmeti</ItemDescription>
+        <LineExtensionAmount>10000.00</LineExtensionAmount>
+    </InvoiceLine>
+</Invoice>""")
+            smm_data = parse_ubl_document(temp_smm)
+            self.assertIn("e-Serbest Meslek Makbuzu", smm_data["belge_turu"])
+            self.assertEqual(smm_data["tutarlar"]["mal_hizmet_toplam"], 10000.0)
+            self.assertEqual(smm_data["tutarlar"]["stopaj_toplam"], 2000.0)
+            self.assertEqual(smm_data["tutarlar"]["net_tutar"], 10000.0)
+        finally:
+            if os.path.exists(temp_smm):
+                os.remove(temp_smm)
+
+        # e-MM Test
+        temp_mm = os.path.join(os.path.dirname(__file__), "temp_mm.xml")
+        try:
+            with open(temp_mm, "w", encoding="utf-8") as f:
+                f.write("""<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
+    <ID>GIB2026000000077</ID>
+    <IssueDate>2026-10-22</IssueDate>
+    <InvoiceTypeCode>MUSTAHSILMAKBUZ</InvoiceTypeCode>
+    <LegalMonetaryTotal>
+        <LineExtensionAmount>50000.00</LineExtensionAmount>
+        <PayableAmount>48000.00</PayableAmount>
+    </LegalMonetaryTotal>
+    <Note>GV Stopajı: 1000.00 TL | Ticaret Borsası Kesintisi: 1000.00 TL</Note>
+</Invoice>""")
+            mm_data = parse_ubl_document(temp_mm)
+            self.assertIn("e-Müstahsil Makbuzu", mm_data["belge_turu"])
+            self.assertEqual(mm_data["fatura_no"], "GIB2026000000077")
+        finally:
+            if os.path.exists(temp_mm):
+                os.remove(temp_mm)
+
+    def test_ev_charging_energy_invoice(self):
+        temp_ev = os.path.join(os.path.dirname(__file__), "temp_ev.xml")
+        try:
+            with open(temp_ev, "w", encoding="utf-8") as f:
+                f.write("""<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
+    <ID>EVF2026000000555</ID>
+    <IssueDate>2026-10-23</IssueDate>
+    <Note>Şarj Ağı İstasyon ID: TR-IST-LEVENT-01 | Soket ID: CCS-DC-180KW-02 | EPDK Lisans: SARJ/001</Note>
+    <InvoiceLine>
+        <ItemDescription>Elektrikli Araç DC Hızlı Şarj Hizmeti</ItemDescription>
+        <InvoicedQuantity unitCode="KWH">45.5</InvoicedQuantity>
+        <PriceAmount>8.50</PriceAmount>
+        <LineExtensionAmount>386.75</LineExtensionAmount>
+    </InvoiceLine>
+</Invoice>""")
+            ev_data = parse_ubl_document(temp_ev)
+            es = ev_data["enerji_sarj_bilgileri"]
+            self.assertTrue(es["enerji_faturasi_mi"])
+            self.assertEqual(es["tuketim_kwh"], 45.5)
+            self.assertEqual(es["kwh_birim_fiyat"], 8.50)
+            self.assertEqual(es["istasyon_id"], "TR-IST-LEVENT-01")
+            self.assertEqual(es["soket_id"], "CCS-DC-180KW-02")
+            self.assertEqual(es["epdk_lisans"], "SARJ/001")
+        finally:
+            if os.path.exists(temp_ev):
+                os.remove(temp_ev)
 
 if __name__ == "__main__":
     unittest.main()
